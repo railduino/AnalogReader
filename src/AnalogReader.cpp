@@ -37,7 +37,7 @@ AnalogReader::AnalogReader(int pin, int lower, int upper)
 
 void AnalogReader::begin(void)
 {
-  _middle = read(0);
+  _middle = readValue(0);
   update();
   _prev = _curr;
 }
@@ -49,7 +49,7 @@ void AnalogReader::begin(void)
 
 void AnalogReader::update(void)
 {
-  int value = read(_middle);
+  int value = readValue(_middle);
 
   _prev = _curr;
   _curr = map(value, 0, 1023, _lower, _upper);
@@ -67,7 +67,7 @@ void AnalogReader::update(void)
  * - middle  - zero for calibration ot the neutral position
  */
 
-int AnalogReader::read(int middle)
+int AnalogReader::readValue(int middle)
 {
   int value, proof;
 
