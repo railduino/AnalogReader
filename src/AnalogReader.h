@@ -20,8 +20,8 @@
 
 class AnalogReader {
   public:
-    AnalogReader(int pin, int lower, int upper);
-    AnalogReader(int pin);
+    AnalogReader(int pin, bool center, int lower, int upper);
+    AnalogReader(int pin, bool center);
 
     void begin(void);        // must be called in setup()
     void update(void);       // must be called in loop()
@@ -32,14 +32,15 @@ class AnalogReader {
 
   private:
     int _pin;
+    bool _center;
     int _lower;
-    int _middle;
     int _upper;
+    int _middle;
     int _curr;
     int _prev;
 
-    // Internal function to reliably read analog values
-    int readValue(int middle);
+    // Internal function to read the analog value
+    int readValue(void);
 };
 
 #endif
