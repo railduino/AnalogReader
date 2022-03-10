@@ -23,24 +23,19 @@ class AnalogReader {
     AnalogReader(int pin, bool center, int lower, int upper);
     AnalogReader(int pin, bool center);
 
-    void begin(void);        // must be called in setup()
-    void update(void);       // must be called in loop()
-
-    int getMiddle(void);
-    int getValue(void);
-    bool isChanged(void);
+    bool readValue(int *pValue);
+    int  getMiddle(void);
+    int  getCurrent(void);
 
   private:
-    int _pin;
+    bool _startup;
+    int  _pin;
     bool _center;
-    int _lower;
-    int _upper;
-    int _middle;
-    int _curr;
-    int _prev;
-
-    // Internal function to read the analog value
-    int readValue(void);
+    int  _lower;
+    int  _upper;
+    int  _middle;
+    int  _curr;
+    int  _prev;
 };
 
 #endif

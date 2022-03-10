@@ -21,9 +21,12 @@ AnalogReader::AnalogReader(int pin, bool center, int lower, int upper)
 {
   _pin = pin;
   pinMode(_pin, INPUT);
+
   _center = center;
   _lower = lower;
   _upper = upper;
+
+  _startup = true;
 }
 
 /*
@@ -35,8 +38,12 @@ AnalogReader::AnalogReader(int pin, bool center): AnalogReader(pin, center, DEFA
 }
 
 /*
- * The begin() function must be called within Arduino's setup().
- * It records the initial state and calibrates the axis.
+ * The readValue() function is the main workhorse.
+ * During normal course of operation it is the only
+ * function that needs to be called during loop().
+ *
+ * It returns both the state (changed or not) and the
+ * current value (assuming an int pointer argument).
  *
  * Calibrating is necessary for e.g. joysticks having a
  * center (or middle) position and a range from 0 to 1023.
@@ -44,29 +51,29 @@ AnalogReader::AnalogReader(int pin, bool center): AnalogReader(pin, center, DEFA
  * (which is half of the maximum at 10 bit resolution).
  */
 
-void AnalogReader::begin(void)
+bool AnalogReader::readValue(int *pValue)
 {
-  if (_center) {
-    _middle = readValue();
-  } else {
-    _middle = 0;
+  int value, proof;
+
+  value = analogRead(_pin);
+  while ((proof = analogRead(_pin)) != value) {
+    value = proof;
   }
 
-  update();
-  _prev = _curr;
-}
-
-/*
- * The update() function has to be called in every loop() function.
- * Only then the analog value is current and valid.
- *
- * The funny mapping with multiplying and dividing helps
- * to distribute values evenly and stays within 16 bit.
- */
-
-void AnalogReader::update(void)
-{
-  int value = readValue();
+  if (_startup) {
+    if (_center) {
+      _middle = value;
+      _prev = _curr = (_upper / 2);
+    } else {
+      _middle = 0;
+      _prev = _curr = map(value, 0, 1023, _lower, _upper);
+    }
+    if (pValue != NULL) {
+      *pValue = _curr;
+    }
+    _startup = false;
+    return true;
+  }
 
   if (_center) {
     if (value < _middle - 1) {
@@ -80,30 +87,20 @@ void AnalogReader::update(void)
 
   _prev = _curr;
   _curr = map(value, 0, 1023, _lower, _upper);
-}
 
-/*
- * Read the analog input. The reading is repeated until
- * the previous and current values are identical.
- */
-
-int AnalogReader::readValue(void)
-{
-  int value, proof;
-
-  value = analogRead(_pin);
-  while ((proof = analogRead(_pin)) != value) {
-    value = proof;
+  if (pValue != NULL) {
+    *pValue = _curr;
   }
 
-  return value;
+  return (_curr != _prev);
 }
 
 /*
  * The getMiddle() function serves more or less a diagnostic
  * purpose. It delivers the unmapped reading that is being
- * used for calibration, assuming the axis is in the middle
+ * used for calibration, assuming the stick is in the middle
  * position when the device is read for the first time.
+ * It is valid only after a call to readValue().
  */
 
 int AnalogReader::getMiddle(void)
@@ -113,19 +110,10 @@ int AnalogReader::getMiddle(void)
 
 /*
  * The getValue() function returns the current axis reading.
+ * It is valid only after a call to readValue().
  */
 
-int AnalogReader::getValue(void)
+int AnalogReader::getCurrent(void)
 {
   return _curr;
-}
-
-/*
- * The isChanged() function indicates a changed reading and
- * is valid after calling update().
- */
-
-bool AnalogReader::isChanged(void)
-{
-  return (_curr != _prev);
 }

@@ -8,12 +8,9 @@
 AnalogReader	KEYWORD1
 
 # Methods and Functions (KEYWORD2)
-begin	KEYWORD2
-update	KEYWORD2
 readValue	KEYWORD2
 getMiddle	KEYWORD2
-getValue	KEYWORD2
-isChanged	KEYWORD2
+getCurrent	KEYWORD2
 
 # Instances (KEYWORD2)
 
