@@ -20,22 +20,24 @@
 
 class AnalogReader {
   public:
-    AnalogReader(int pin, bool center, int lower, int upper);
-    AnalogReader(int pin, bool center);
+    AnalogReader(int pin, int center, int lower, int upper);
+    AnalogReader(int pin, int center);
 
     bool readValue(int *pValue);
     int  getMiddle(void);
     int  getCurrent(void);
 
   private:
+    int _pin;
+    int _center;
+    int _lower;
+    int _upper;
+    int _middle;
+    int _midmin;
+    int _midmax;
+    int _curr;
+    int _prev;
     bool _startup;
-    int  _pin;
-    bool _center;
-    int  _lower;
-    int  _upper;
-    int  _middle;
-    int  _curr;
-    int  _prev;
 };
 
 #endif

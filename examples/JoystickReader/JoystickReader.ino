@@ -5,10 +5,10 @@
 #include <AnalogReader.h>
 
 // The (horizontal) X axis ranges from 0 to 1023 and starts in the middle
-AnalogReader joyX(A0, true);
+AnalogReader joyX(A0, 10);
 
 // The (vertical) Y axis is additonally mapped to a single byte value
-AnalogReader joyY(A1, true, 0, 255);
+AnalogReader joyY(A1, 10, 0, 255);
 
 // Output buffer for debugging
 char buffer[32];

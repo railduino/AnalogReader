@@ -12,12 +12,12 @@
 /*
  * The constructor has four arguments:
  * - pin     - Analog input pin
- * - center  - Flag for joystick type (middle position)
+ * - center  - Dead zone for joystick type (middle position)
  * - lower   - lower bound after mapping
  * - upper   - upper bound after mapping
  */
 
-AnalogReader::AnalogReader(int pin, bool center, int lower, int upper)
+AnalogReader::AnalogReader(int pin, int center, int lower, int upper)
 {
   _pin = pin;
   pinMode(_pin, INPUT);
@@ -33,7 +33,7 @@ AnalogReader::AnalogReader(int pin, bool center, int lower, int upper)
  * There is a shortcut if the lower and upper bounds are 0 and 1023
  */
 
-AnalogReader::AnalogReader(int pin, bool center): AnalogReader(pin, center, DEFAULT_LOWER, DEFAULT_UPPER)
+AnalogReader::AnalogReader(int pin, int center): AnalogReader(pin, center, DEFAULT_LOWER, DEFAULT_UPPER)
 {
 }
 
@@ -61,13 +61,15 @@ bool AnalogReader::readValue(int *pValue)
   }
 
   if (_startup) {
-    if (_center) {
+    if (_center > 0) {
       _middle = value;
-      _prev = _curr = (_upper / 2);
+      _midmin = _middle - _center;
+      _midmax = _middle + _center;
+      _curr = _lower + ((_upper - _lower) / 2);
     } else {
-      _middle = 0;
-      _prev = _curr = map(value, 0, 1023, _lower, _upper);
+      _curr = map(value, 0, 1023, _lower, _upper);
     }
+    _prev = _curr;
     if (pValue != NULL) {
       *pValue = _curr;
     }
@@ -75,11 +77,11 @@ bool AnalogReader::readValue(int *pValue)
     return true;
   }
 
-  if (_center) {
-    if (value < _middle - 1) {
-      value = map(value*16, 0, _middle*16, 0, 511*16) / 16;
-    } else if (value > _middle + 1) {
-      value = map(value*16, _middle*16, 1023*16, 512*16, 1023*16) / 16;
+  if (_center > 0) {
+    if (value <= _midmin) {
+      value = map(value*16, 0, _midmin*16, 0, 511*16) / 16;
+    } else if (value >= _midmax) {
+      value = map(value*16, _midmax*16, 1023*16, 512*16, 1023*16) / 16;
     } else {
       value = 511;
     }
