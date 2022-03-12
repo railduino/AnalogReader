@@ -5,7 +5,7 @@
 #include <AnalogReader.h>
 
 // Instantiate the reader
-AnalogReader pot(A10, false);
+AnalogReader pot(A0, false);
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -26,4 +26,3 @@ void loop() {
 
   delay(50);
 }
-
