@@ -55,11 +55,20 @@ bool AnalogReader::readValue(int *pValue)
 {
   int value, proof;
 
+  // Read the current physical value
   value = analogRead(_pin);
   while ((proof = analogRead(_pin)) != value) {
     value = proof;
   }
 
+  // Define edges
+  if (value >= 1021) {
+    value = 1023;
+  } else if (value <= 2) {
+    value = 0;
+  }
+
+  // The first reading is always returned, also calibrates
   if (_startup) {
     if (_center > 0) {
       _middle = value;
@@ -69,6 +78,7 @@ bool AnalogReader::readValue(int *pValue)
     } else {
       _curr = map(value, 0, 1023, _lower, _upper);
     }
+    _oldval = value;
     _prev = _curr;
     if (pValue != NULL) {
       *pValue = _curr;
@@ -77,6 +87,13 @@ bool AnalogReader::readValue(int *pValue)
     return true;
   }
 
+  // Try to avoid flickering
+  if (value >= (_oldval - 1) && value <= (_oldval + 1)) {
+    return false;
+  }
+  _oldval = value;
+
+  // Expand or compress values outside the middle range
   if (_center > 0) {
     if (value <= _midmin) {
       value = map(value*16, 0, _midmin*16, 0, 511*16) / 16;
@@ -87,9 +104,9 @@ bool AnalogReader::readValue(int *pValue)
     }
   }
 
+  // Remember the value and return it
   _prev = _curr;
   _curr = map(value, 0, 1023, _lower, _upper);
-
   if (pValue != NULL) {
     *pValue = _curr;
   }

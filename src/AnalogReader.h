@@ -35,6 +35,7 @@ class AnalogReader {
     int _middle;
     int _midmin;
     int _midmax;
+    int _oldval;
     int _curr;
     int _prev;
     bool _startup;
